@@ -16,7 +16,7 @@ final class ContentViewModel {
         }
     }
     var customFolderName = ""
-    var downloadPath = FileManager.default.homeDirectoryForCurrentUser.appending(path: "Downloads").path
+    var downloadPath = "/Users/\(NSUserName())/Downloads"
     
     var outputLog = ""
     var downloadProgress = 0.0
@@ -31,7 +31,15 @@ final class ContentViewModel {
     var completedRepositories = 0
 
     var isPaused = false
-    var recentProfiles: [String] { recentStore.profiles }
+    var recentProfiles: [RecentProfile] { recentStore.profiles }
+
+    func removeRecentProfile(_ profile: RecentProfile) {
+        recentStore.remove(profile)
+    }
+
+    func clearRecentProfiles() {
+        recentStore.clear()
+    }
     private var downloadTask: Task<Void, Never>?
 
     var isReadyToFetch: Bool {
@@ -42,7 +50,7 @@ final class ContentViewModel {
         !isDownloading && !fetchedRepositories.isEmpty && !selectedRepositoryIDs.isEmpty
     }
 
-    func fetchRepositories() {
+    func fetchRepos() {
         Task {
             guard let username = GitHubAPI.extractUsername(from: githubProfile) else {
                 logMessage("Invalid URL or username provided.\n")
@@ -57,20 +65,23 @@ final class ContentViewModel {
             defer { isFetching = false }
             
             do {
-                let repos = try await GitHubAPI.fetchRepositories(for: username)
-                if repos.isEmpty {
-                    logMessage("No public repositories found.\n")
+                let repos = try await GitHubAPI.fetchRepos(for: username)
+                let skipForks = UserDefaults.standard.bool(forKey: "skipForks")
+                let filteredRepos = repos.filter { skipForks ? !$0.fork : true }
+
+                if filteredRepos.isEmpty {
+                    logMessage("No public repositories found (or all were filtered out).\n")
                 } else {
-                    fetchedRepositories = repos
-                    selectedRepositoryIDs = Set(repos.map(\.id))
-                    logMessage("Found \(repos.count) repositories.\n")
+                    fetchedRepositories = filteredRepos
+                    selectedRepositoryIDs = Set(filteredRepos.map(\.id))
+                    logMessage("Found \(filteredRepos.count) repositories.\n")
                     
                     if let username = GitHubAPI.extractUsername(from: githubProfile) {
-                        recentStore.insert(username)
+                        recentStore.insert(username, repositoryCount: filteredRepos.count)
                     }
                 }
             } catch {
-                logMessage("Error fetching repositories: \(error.localizedDescription)\n")
+                logMessage("Error: \(error.localizedDescription)\n")
             }
         }
     }
@@ -121,10 +132,10 @@ final class ContentViewModel {
             let destinationDirectory = URL(fileURLWithPath: downloadPath).appending(path: folderName)
             try? FileManager.default.createDirectory(at: destinationDirectory, withIntermediateDirectories: true)
 
-            await downloadService.download(
-                username: username,
-                repositories: reposToDownload,
-                destinationDirectory: destinationDirectory,
+            await downloadService.start(
+                user: username,
+                repos: reposToDownload,
+                outDir: destinationDirectory,
                 isPaused: { [weak self] in 
                     let safeSelf = self
                     return await MainActor.run { safeSelf?.isPaused ?? false } 
@@ -150,12 +161,12 @@ final class ContentViewModel {
                         }
                     }
                 },
-                onFailure: { [weak self] index, _ in
+                onFailure: { [weak self] index, error in
                     let safeSelf = self
                     Task { @MainActor in
                         guard let self = safeSelf else { return }
                         if Task.isCancelled { return }
-                        self.logMessage(" ✗\n")
+                        self.logMessage(" ✗ (\(error.localizedDescription))\n")
                         self.completedRepositories = index + 1
                         withAnimation(.spring(duration: 0.5, bounce: 0.15)) {
                             self.downloadProgress = Double(index + 1) / Double(self.totalRepositories)

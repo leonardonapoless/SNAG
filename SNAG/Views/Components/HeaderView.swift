@@ -10,7 +10,6 @@ struct HeaderView: View {
                     .font(.system(size: 150, weight: .black, design: .default).width(.compressed))
                     .tracking(-3.5)
                     .lineLimit(1)
-                    .minimumScaleFactor(0.1)
                     .allowsTightening(true)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .offset(x: -8)
@@ -32,7 +31,6 @@ struct HeaderView: View {
                         insertion: .push(from: .trailing).combined(with: .opacity),
                         removal: .scale.combined(with: .opacity)
                     ))
-                    .padding(.bottom, 24)
                 }
             }
             .padding(.horizontal, 32)

@@ -1,24 +1,16 @@
-import SwiftUI
+import Foundation
 
 enum NavigationItem: String, CaseIterable, Identifiable {
-    case download
-    case recent
-    case settings
-    
+    case download = "Download"
+    case recents = "Recents"
+    case settings = "Settings"
+
     var id: String { rawValue }
-    
-    var title: String {
-        switch self {
-        case .download: return "Download"
-        case .recent: return "Recent"
-        case .settings: return "Settings"
-        }
-    }
-    
+
     var icon: String {
         switch self {
-        case .download: return "square.and.arrow.down"
-        case .recent: return "clock"
+        case .download: return "arrow.down.circle"
+        case .recents: return "clock"
         case .settings: return "gearshape"
         }
     }

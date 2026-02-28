@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct RepositorySelectionView: View {
+struct RepoSelectionView: View {
     var viewModel: ContentViewModel
     
     var body: some View {

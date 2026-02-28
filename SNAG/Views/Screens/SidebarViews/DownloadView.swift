@@ -1,24 +1,11 @@
 import SwiftUI
 
-struct ContentView: View {
-    @State private var viewModel = ContentViewModel()
-    @State private var isHoveringDownloadButton = false
+struct DownloadView: View {
+    let viewModel: ContentViewModel
+    @Binding var isHoveringDownloadButton: Bool
 
     var body: some View {
-        DownloadView(
-            viewModel: viewModel,
-            isHoveringDownloadButton: $isHoveringDownloadButton
-        )
-        .containerBackground(.windowBackground, for: .window)
-        .frame(minWidth: 800, minHeight: 600)
-    }
-
-    private struct DownloadView: View {
-        let viewModel: ContentViewModel
-        @Binding var isHoveringDownloadButton: Bool
-
-        var body: some View {
-            VStack(spacing: 0) {
+        VStack(spacing: 0) {
                 HeaderView(viewModel: viewModel)
 
                 ScrollView {
@@ -26,7 +13,7 @@ struct ContentView: View {
                         InputSection(viewModel: viewModel)
 
                         if !viewModel.fetchedRepositories.isEmpty {
-                            RepositorySelectionView(viewModel: viewModel)
+                            RepoSelectionView(viewModel: viewModel)
                                 .transition(.move(edge: .top).combined(with: .opacity))
                         }
 
@@ -39,6 +26,6 @@ struct ContentView: View {
                     .padding(.vertical, 32)
                 }
             }
+            .padding(.top, -20)
         }
     }
-}

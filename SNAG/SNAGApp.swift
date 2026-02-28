@@ -5,9 +5,10 @@ struct SNAGApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .onAppear {
+                    NSWindow.allowsAutomaticWindowTabbing = false
+            }
         }
         .windowStyle(.hiddenTitleBar)
-        .windowToolbarStyle(.unifiedCompact)
-        .windowResizability(.contentMinSize)
     }
 }

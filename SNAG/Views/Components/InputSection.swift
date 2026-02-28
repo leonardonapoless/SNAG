@@ -2,16 +2,38 @@ import SwiftUI
 
 struct InputSection: View {
     @Bindable var viewModel: ContentViewModel
+    @State private var showingProfile = false
+
+    private var profileUsername: String {
+        viewModel.githubProfile.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
 
     var body: some View {
         VStack(spacing: 0) {
-            InputRow(
-                label: "GitHub Profile",
-                icon: "person.crop.circle",
-                text: $viewModel.githubProfile,
-                prompt: "johnappleseed",
-                prefix: "https://github.com/"
-            )
+            HStack {
+                InputRow(
+                    label: "GitHub Profile",
+                    icon: "person.crop.circle",
+                    text: $viewModel.githubProfile,
+                    prompt: "johnappleseed",
+                    prefix: "https://github.com/"
+                )
+
+                if !profileUsername.isEmpty {
+                    Button {
+                        showingProfile = true
+                    } label: {
+                        Image(systemName: "info.circle")
+                            .font(.system(size: 14))
+                            .foregroundStyle(.secondary)
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.trailing, 16)
+                }
+            }
+            .sheet(isPresented: $showingProfile) {
+                ProfileSheet(username: profileUsername)
+            }
 
             Divider()
                 .padding(.leading, 32)
@@ -123,9 +145,8 @@ private struct InputRow: View {
 
 enum PathFormatter {
     static func displayPath(_ path: String) -> String {
-        path.replacingOccurrences(
-            of: FileManager.default.homeDirectoryForCurrentUser.path,
-            with: "~"
-        )
+        var display = path.replacingOccurrences(of: NSHomeDirectory(), with: "~")
+        display = display.replacingOccurrences(of: "/Users/\(NSUserName())", with: "~")
+        return display
     }
 }

@@ -91,7 +91,7 @@ struct ActionSection: View {
                 ))
             } else {
                 Button(action: {
-                    viewModel.fetchRepositories()
+                    viewModel.fetchRepos()
                 }) {
                     HStack(spacing: 8) {
                         if viewModel.isFetching {
@@ -118,9 +118,14 @@ struct ActionSection: View {
                 ))
             }
         }
-        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: viewModel.isDownloading)
-        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: viewModel.isFinished)
-        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: viewModel.fetchedRepositories.isEmpty)
-        .animation(.spring(response: 0.3, dampingFraction: 0.8), value: viewModel.isFetching)
+        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: actionState)
+    }
+
+    private var actionState: String {
+        if viewModel.isFinished { return "finished" }
+        if viewModel.isDownloading { return "downloading-\(viewModel.isPaused)" }
+        if viewModel.isFetching { return "fetching" }
+        if !viewModel.fetchedRepositories.isEmpty { return "ready" }
+        return "idle"
     }
 }
