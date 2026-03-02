@@ -43,7 +43,7 @@ struct ConsoleSection: View {
                 
                 Spacer()
                 
-                Text("\(Int(viewModel.downloadProgress * 100))%")
+                Text(viewModel.downloadProgress, format: .percent.precision(.fractionLength(0)))
                     .font(.system(size: 15, weight: .bold, design: .rounded))
                     .foregroundStyle(viewModel.isFinished ? Color.green : Color.primary)
                     .contentTransition(.numericText())
@@ -61,7 +61,7 @@ struct ConsoleSection: View {
                             ? AnyShapeStyle(Color.primary.gradient)
                             : AnyShapeStyle(Color.primary.gradient)
                         )
-                        .frame(width: max(geometry.size.width * viewModel.downloadProgress, 6), height: 6)
+                        .frame(width: geometry.size.width * viewModel.downloadProgress, height: 6)
                 }
             }
             .frame(height: 6)
