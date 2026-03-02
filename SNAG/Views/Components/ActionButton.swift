@@ -32,9 +32,9 @@ private struct ActionButtonView: View {
     
     var body: some View {
         configuration.label
+            .frame(maxWidth: .infinity)
             .padding(.vertical, 10)
             .padding(.horizontal, 20)
-            .frame(maxWidth: .infinity)
             .background(backgroundView)
             .foregroundStyle(foregroundColor)
             .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
