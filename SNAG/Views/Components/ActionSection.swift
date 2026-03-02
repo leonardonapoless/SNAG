@@ -7,12 +7,25 @@ struct ActionSection: View {
     var body: some View {
         Group {
             if viewModel.isFinished {
-                Button(action: { viewModel.resetSession() }) {
-                    Label("Start New Download", systemImage: "arrow.counterclockwise")
-                        .font(.system(size: 14, weight: .semibold, design: .rounded))
-                        .frame(maxWidth: .infinity)
+                HStack(spacing: 12) {
+                    Button(action: { viewModel.resetSession() }) {
+                        Label("Start New Download", systemImage: "arrow.counterclockwise")
+                            .font(.system(size: 14, weight: .semibold, design: .rounded))
+                            .frame(maxWidth: .infinity)
+                    }
+                    .actionButtonStyle(.secondary)
+                    
+                    if let dir = viewModel.currentDestinationDirectory {
+                        Button(action: {
+                            NSWorkspace.shared.open(dir)
+                        }) {
+                            Label("Open in Finder", systemImage: "folder")
+                                .font(.system(size: 14, weight: .semibold, design: .rounded))
+                                .frame(maxWidth: .infinity)
+                        }
+                        .actionButtonStyle(.primary)
+                    }
                 }
-                .actionButtonStyle(.secondary)
                 .transition(.asymmetric(
                     insertion: .push(from: .bottom).combined(with: .opacity),
                     removal: .push(from: .top).combined(with: .opacity)

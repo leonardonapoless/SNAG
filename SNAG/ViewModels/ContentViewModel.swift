@@ -16,12 +16,17 @@ final class ContentViewModel {
         }
     }
     var customFolderName = ""
-    var downloadPath = "/Users/\(NSUserName())/Downloads"
+    var downloadPath = "/Users/\(NSUserName())/Downloads/SNAG"
     
     var outputLog = ""
     var downloadProgress = 0.0
     var isDownloading = false
     var isFinished = false
+    var isCancelledState = false
+    var currentDestinationDirectory: URL?
+    
+    var currentError: AppError?
+    var showErrorModal = false
     
     var isFetching = false
     var fetchedRepositories: [Repository] = []
@@ -110,6 +115,7 @@ final class ContentViewModel {
             isDownloading = true
             isPaused = false
             isFinished = false
+            isCancelledState = false
             outputLog = ""
             downloadProgress = 0
             completedRepositories = 0
@@ -131,6 +137,8 @@ final class ContentViewModel {
             let folderName = customFolderName.isEmpty ? username : customFolderName
             let destinationDirectory = URL(fileURLWithPath: downloadPath).appending(path: folderName)
             try? FileManager.default.createDirectory(at: destinationDirectory, withIntermediateDirectories: true)
+            
+            self.currentDestinationDirectory = destinationDirectory
 
             await downloadService.start(
                 user: username,
@@ -166,7 +174,21 @@ final class ContentViewModel {
                     Task { @MainActor in
                         guard let self = safeSelf else { return }
                         if Task.isCancelled { return }
-                        self.logMessage(" ✗ (\(error.localizedDescription))\n")
+                        
+                        let repo = reposToDownload[index]
+                        
+                        if let appError = error as? AppError, 
+                           case .gitCloneFailed(let message) = appError, 
+                           message.contains("Permission denied (publickey)") {
+                            self.logMessage(" ✗ (SSH Key Missing)\n")
+                            if self.currentError == nil {
+                                self.currentError = .sshKeyMissing(repository: repo.name)
+                                self.showErrorModal = true
+                            }
+                        } else {
+                            self.logMessage(" ✗ (\(error.localizedDescription))\n")
+                        }
+                        
                         self.completedRepositories += 1
                         withAnimation(.spring(duration: 0.5, bounce: 0)) {
                             self.downloadProgress = Double(self.completedRepositories) / Double(self.totalRepositories)
@@ -182,10 +204,16 @@ final class ContentViewModel {
                             with: "~"
                         )
                         self.logMessage("\n\(successCount)/\(self.totalRepositories) repositories downloaded to \(displayPath)\n")
-                        withAnimation(.spring(duration: 0.6, bounce: 0.2)) {
-                            self.isFinished = true
+                        if !self.isCancelledState {
+                            withAnimation(.spring(duration: 0.6, bounce: 0.2)) {
+                                self.isFinished = true
+                            }
                         }
                     }
+                },
+                isCancelled: { [weak self] in
+                    let safeSelf = self
+                    return await MainActor.run { safeSelf?.showErrorModal ?? false || Task.isCancelled }
                 }
             )
         }
@@ -204,20 +232,21 @@ final class ContentViewModel {
         withAnimation(.spring(duration: 0.3)) {
             isDownloading = false
             isPaused = false
-            downloadProgress = 0
-            if !outputLog.isEmpty && !outputLog.hasSuffix("\n") {
-                outputLog += "\n"
-            }
-            outputLog += "Operation completely cancelled.\n"
+            isCancelledState = true
+            outputLog += "\nDownload cancelled.\n"
+            currentError = nil
+            showErrorModal = false
         }
     }
 
     func resetSession() {
         withAnimation(.spring(duration: 0.3)) {
             isFinished = false
+            isCancelledState = false
             downloadProgress = 0
             outputLog = ""
             completedRepositories = 0
+            currentDestinationDirectory = nil
             fetchedRepositories.removeAll()
             selectedRepositoryIDs.removeAll()
         }

@@ -99,7 +99,13 @@ struct InputSection: View {
         panel.message = "Choose a destination folder for downloaded repositories"
         
         if panel.runModal() == .OK, let url = panel.url {
-            viewModel.downloadPath = url.path
+            let desktopPath = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Desktop").path
+            
+            if url.path == desktopPath {
+                viewModel.downloadPath = url.appendingPathComponent("SNAG").path
+            } else {
+                viewModel.downloadPath = url.path
+            }
         }
     }
 }

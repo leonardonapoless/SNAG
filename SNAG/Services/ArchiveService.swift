@@ -94,6 +94,8 @@ enum ArchiveService {
             
             var env = ProcessInfo.processInfo.environment
             env["PATH"] = "/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin"
+            env["GIT_SSH_COMMAND"] = "ssh -o StrictHostKeyChecking=accept-new"
+            env["GIT_TERMINAL_PROMPT"] = "0"
             p.environment = env
             
             let errorPipe = Pipe()
