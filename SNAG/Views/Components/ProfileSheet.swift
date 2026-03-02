@@ -72,6 +72,7 @@ private struct ProfileSkeleton: View {
                 Pill(width: 22, height: 16)
                 Spacer()
                 Circle().frame(width: 32, height: 32)
+                    .padding(.leading, 62)
                 Spacer()
                 Pill(width: 62, height: 30)
                     .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(.quaternary))
@@ -161,4 +162,12 @@ private struct Pill: View {
             .frame(maxWidth: width == .infinity ? .infinity : nil, minHeight: height, maxHeight: height)
             .frame(width: width == .infinity ? nil : width)
     }
+}
+
+#Preview {
+    ProfileSkeleton()
+}
+
+#Preview {
+    ProfileSheet(username: "leonardonapoless")
 }
