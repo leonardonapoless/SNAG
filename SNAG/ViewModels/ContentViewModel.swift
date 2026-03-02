@@ -155,9 +155,9 @@ final class ContentViewModel {
                         guard let self = safeSelf else { return }
                         if Task.isCancelled { return }
                         self.logMessage(" ✓\n")
-                        self.completedRepositories = index + 1
-                        withAnimation(.spring(duration: 0.5, bounce: 0.15)) {
-                            self.downloadProgress = Double(index + 1) / Double(self.totalRepositories)
+                        self.completedRepositories += 1
+                        withAnimation(.spring(duration: 0.5, bounce: 0)) {
+                            self.downloadProgress = Double(self.completedRepositories) / Double(self.totalRepositories)
                         }
                     }
                 },
@@ -167,9 +167,9 @@ final class ContentViewModel {
                         guard let self = safeSelf else { return }
                         if Task.isCancelled { return }
                         self.logMessage(" ✗ (\(error.localizedDescription))\n")
-                        self.completedRepositories = index + 1
-                        withAnimation(.spring(duration: 0.5, bounce: 0.15)) {
-                            self.downloadProgress = Double(index + 1) / Double(self.totalRepositories)
+                        self.completedRepositories += 1
+                        withAnimation(.spring(duration: 0.5, bounce: 0)) {
+                            self.downloadProgress = Double(self.completedRepositories) / Double(self.totalRepositories)
                         }
                     }
                 },
