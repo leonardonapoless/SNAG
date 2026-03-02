@@ -8,6 +8,7 @@ enum AppError: LocalizedError {
     case timeout
     case serverError(Int)
     case gitCloneFailed(String)
+    case sshKeyMissing(repository: String)
 
     var errorDescription: String? {
         switch self {
@@ -22,9 +23,24 @@ enum AppError: LocalizedError {
         case .timeout:
             return "The request to GitHub timed out. Please try again later."
         case .serverError(let code):
-            return "GitHub servers appear to be down (HTTP \(code))."
+            return "GitHub servers appear to be offline (HTTP \(code))."
         case .gitCloneFailed(let message):
             return "Git Clone aborted:\n\(message)"
+        case .sshKeyMissing(let repo):
+            return "Failed to clone '\(repo)' using SSH."
+        }
+    }
+
+    var recoverySuggestion: String? {
+        switch self {
+        case .rateLimited: 
+            return "Please wait a moment and try again later."
+        case .apiError, .extractionFailed, .serverError, .gitCloneFailed:
+            return "Check the repository URL or permissions and try again."
+        case .offline, .timeout:
+            return "Ensure your Mac is connected to the network and try again."
+        case .sshKeyMissing:
+            return "macOS cannot find an SSH key associated with your GitHub account. You can either switch the download method to HTTPS, or generate and link a new SSH key to your account."
         }
     }
 }

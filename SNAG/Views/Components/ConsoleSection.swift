@@ -11,7 +11,7 @@ struct ConsoleSection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            if viewModel.isDownloading || viewModel.downloadProgress > 0 {
+            if viewModel.isDownloading || viewModel.isFinished || viewModel.isCancelledState {
                 progressHeader
                     .transition(
                         .asymmetric(
@@ -21,7 +21,7 @@ struct ConsoleSection: View {
                     )
             }
 
-            if viewModel.downloadProgress > 0 {
+            if viewModel.isDownloading || viewModel.isFinished || viewModel.isCancelledState {
                 Divider()
                     .padding(.horizontal, 20)
                     .transition(.opacity)
@@ -31,21 +31,22 @@ struct ConsoleSection: View {
         }
         .animation(.spring(response: 0.4, dampingFraction: 0.8), value: viewModel.isDownloading)
         .animation(.spring(response: 0.4, dampingFraction: 0.8), value: viewModel.isFinished)
+        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: viewModel.isCancelledState)
         .consoleCardStyle()
     }
 
     private var progressHeader: some View {
         VStack(spacing: 10) {
             HStack(alignment: .lastTextBaseline) {
-                Text(viewModel.isFinished ? "Download Complete" : "Downloading repositories...")
+                Text(viewModel.isCancelledState ? "Download Cancelled" : (viewModel.isFinished ? "Download Complete" : "Downloading repositories..."))
                     .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(viewModel.isFinished ? .primary : .secondary)
+                    .foregroundStyle(viewModel.isCancelledState ? .red : (viewModel.isFinished ? .primary : .secondary))
                 
                 Spacer()
                 
                 Text(viewModel.downloadProgress, format: .percent.precision(.fractionLength(0)))
                     .font(.system(size: 15, weight: .bold, design: .rounded))
-                    .foregroundStyle(viewModel.isFinished ? Color.green : Color.primary)
+                    .foregroundStyle(viewModel.isCancelledState ? Color.red : (viewModel.isFinished ? Color.green : Color.primary))
                     .contentTransition(.numericText())
             }
 
@@ -57,9 +58,11 @@ struct ConsoleSection: View {
                     
                     Capsule(style: .continuous)
                         .fill(
-                            viewModel.isFinished
-                            ? AnyShapeStyle(Color.primary.gradient)
-                            : AnyShapeStyle(Color.primary.gradient)
+                            viewModel.isCancelledState
+                            ? AnyShapeStyle(Color.red.gradient)
+                            : (viewModel.isFinished
+                                ? AnyShapeStyle(Color.primary.gradient)
+                                : AnyShapeStyle(Color.primary.gradient))
                         )
                         .frame(width: geometry.size.width * viewModel.downloadProgress, height: 6)
                 }

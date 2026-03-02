@@ -16,7 +16,8 @@ actor DownloadService {
         onEach: @Sendable (_ index: Int, _ repo: Repository) -> Void,
         onSuccess: @Sendable (_ index: Int) -> Void,
         onFailure: @Sendable (_ index: Int, _ error: Error) -> Void,
-        onComplete: @Sendable (_ count: Int) -> Void
+        onComplete: @Sendable (_ count: Int) -> Void,
+        isCancelled: @Sendable () async -> Bool
     ) async {
         onStart(repos.count)
 
@@ -35,7 +36,13 @@ actor DownloadService {
                 var wasPaused = false
                 while await isPaused() {
                     if !wasPaused { wasPaused = true }
+                    if await isCancelled() { break }
                     try? await Task.sleep(for: .milliseconds(250))
+                }
+                
+                if await isCancelled() {
+                    group.cancelAll()
+                    break
                 }
                 
                 if active >= limit {

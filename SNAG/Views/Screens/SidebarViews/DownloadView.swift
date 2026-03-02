@@ -27,5 +27,18 @@ struct DownloadView: View {
                 }
             }
             .padding(.top, -20)
+            .sheet(isPresented: Bindable(viewModel).showErrorModal) {
+                if let error = viewModel.currentError {
+                    ErrorModalView(
+                        error: error,
+                        onSwitchToHTTPS: {
+                            UserDefaults.standard.set("HTTPS Clone", forKey: "downloadMethod")
+                        },
+                        onSwitchToZIP: {
+                            UserDefaults.standard.set("ZIP Download", forKey: "downloadMethod")
+                        }
+                    )
+                }
+            }
         }
     }
