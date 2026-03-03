@@ -13,7 +13,7 @@ struct ContentView: View {
                     .tag(item)
             }
             .listStyle(.sidebar)
-            .navigationSplitViewColumnWidth(min: 200, ideal: 220, max: 280)
+            .navigationSplitViewColumnWidth(min: 180,ideal: 180, max: 180)
         } detail: {
             switch selection {
             case .download, .none:
