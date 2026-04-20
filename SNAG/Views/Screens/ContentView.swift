@@ -4,16 +4,15 @@ struct ContentView: View {
     @State private var viewModel = ContentViewModel()
     @State private var isHoveringDownloadButton = false
     @State private var selection: NavigationItem? = .download
-    @State private var columnVisibility: NavigationSplitViewVisibility = .all
 
     var body: some View {
-        NavigationSplitView(columnVisibility: $columnVisibility) {
+        NavigationSplitView {
             List(NavigationItem.allCases, selection: $selection) { item in
                 Label(item.rawValue, systemImage: item.icon)
                     .tag(item)
             }
             .listStyle(.sidebar)
-            .navigationSplitViewColumnWidth(min: 180,ideal: 180, max: 180)
+            .navigationSplitViewColumnWidth(min: 160, ideal: 200, max: 240)
         } detail: {
             switch selection {
             case .download, .none:
@@ -27,8 +26,7 @@ struct ContentView: View {
                 SettingsView(viewModel: viewModel)
             }
         }
-        .navigationSplitViewStyle(.prominentDetail)
+        .navigationSplitViewStyle(.balanced)
         .frame(minWidth: 800, minHeight: 740)
     }
 }
-
