@@ -18,3 +18,4 @@ project.xcworkspace/
 *.xccheckout
 *.xcodeproj/project.xcworkspace/xcuserdata/
 *.xcodeproj/xcuserdata/
+build_output/
